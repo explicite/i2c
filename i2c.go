@@ -58,10 +58,23 @@ func NewBus(addr, bus byte) (i2cbus *Bus, err error) {
 	defer busMapLock.Unlock()
 
 	if i2cbus = busMap[bus]; i2cbus == nil {
-		if i2cbus.file, err = os.OpenFile(fmt.Sprintf("/dev/i2c-%v", bus), os.O_RDWR, os.ModeExclusive); err != nil {
-			busMap[bus] = i2cbus
-			err = i2cbus.SetAddress(addr)
+		i2cbus = new(Bus)
+		file, err := os.OpenFile(fmt.Sprintf("/dev/i2c-%v", bus), os.O_RDWR, os.ModeDevice)
+
+		if err != nil {
+			return i2cbus, err
 		}
+
+		i2cbus.file = file
+		err = i2cbus.SetAddress(addr)
+
+		if err != nil {
+			return i2cbus, err
+		}
+
+		busMap[bus] = i2cbus
+
+		return i2cbus, nil
 	}
 
 	return
