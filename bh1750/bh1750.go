@@ -7,9 +7,11 @@ import (
 )
 
 const (
-	WRITE_REG = 0x46
+	//ADDR ≦ 0.3VCC
+	ADDR_L = 0x23
 
-	READ_REG = 0x47
+	//ADDR ≧ 0.7VCC
+	ADDR_H = 0x5c
 
 	//No active state.
 	POWER_DOWN = 0x00
@@ -47,27 +49,28 @@ type BH1750 struct {
 func (b *BH1750) Init(addr byte, bus byte) error {
 	var err error
 	b.bus, err = i2c.NewBus(addr, bus)
-	b.bus.Write(WRITE_REG, POWER_DOWN)
+	b.bus.Write(POWER_DOWN, 0x00)
+
 	return err
 }
 
 func (b *BH1750) Lux(mode byte) (float32, error) {
 	b.bus.Write(mode, 0x00)
 	time.Sleep(120 * time.Millisecond)
-	buf := make([]byte, 2)
+	buf := make([]byte, 0x02)
 	var err error
-	buf, err = b.bus.Read(WRITE_REG, 2)
+	buf, err = b.bus.Read(mode, 0x02)
 
 	if err != nil {
 		return 0, err
 	}
 
-	return float32((int16(buf[1]) + (256 * int16(buf[0])))) / 1.2, nil
+	return float32((uint8(buf[1]) + (uint8(buf[0] >> 8)))) / 1.2, nil
 }
 
 func (b *BH1750) Active() error {
 	var err error
-	if err != b.bus.Write(WRITE_REG, POWER_ON) {
+	if err != b.bus.Write(POWER_ON, 0x00) {
 		return err
 	}
 
@@ -82,7 +85,7 @@ func (b *BH1750) Deactive() error {
 	}
 
 	var err error
-	if err != b.bus.Write(WRITE_REG, POWER_DOWN) {
+	if err != b.bus.Write(POWER_DOWN, 0x00) {
 		return err
 	}
 

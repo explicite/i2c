@@ -50,7 +50,7 @@ type Bus struct {
 	lock sync.Mutex
 }
 
-// Returns an instance to an I2CBus.  If we already have an I2CBus
+// Returns an instance to an I2CBus. If we already have an I2CBus
 // created for the requested bus number, just return that, otherwise
 // set up a new one and open up its associated i2c-dev file
 func NewBus(addr, bus byte) (i2cbus *Bus, err error) {
@@ -93,42 +93,42 @@ func (i2cbus *Bus) SetAddress(addr byte) (err error) {
 	return
 }
 
-func (i2cbus *Bus) Read(reg byte, readLength byte) (list []byte, err error) {
+func (i2cbus *Bus) Read(cmd byte, length byte) (list []byte, err error) {
 	i2cbus.lock.Lock()
 	defer i2cbus.lock.Unlock()
 
-	blockData := make([]byte, readLength+1)
-	blockData[0] = readLength
+	data := make([]byte, length+1)
+	data[0] = length
 
 	if _, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
 		i2cbus.file.Fd(), I2C_SMBUS, uintptr(unsafe.Pointer(&i2c_smbus_ioctl_data{
 			readWrite: I2C_SMBUS_READ,
-			command:   reg,
+			command:   cmd,
 			size:      I2C_SMBUS_I2C_BLOCK_DATA,
-			data:      uintptr(unsafe.Pointer(&blockData[0]))}))); errno != 0 {
+			data:      uintptr(unsafe.Pointer(&data[0]))}))); errno != 0 {
 		err = syscall.Errno(errno)
 	}
 
-	list = make([]byte, readLength)
-	copy(list, blockData[1:])
+	list = make([]byte, length)
+	copy(list, data[1:])
 
 	return
 }
 
-func (i2cbus *Bus) Write(reg byte, list ...byte) (err error) {
+func (i2cbus *Bus) Write(cmd byte, list ...byte) (err error) {
 	i2cbus.lock.Lock()
 	defer i2cbus.lock.Unlock()
 
-	blockData := make([]byte, len(list)+1)
-	blockData[0] = byte(len(list))
-	copy(blockData[1:], list)
+	data := make([]byte, len(list)+1)
+	data[0] = byte(len(list))
+	copy(data[1:], list)
 
 	if _, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
 		i2cbus.file.Fd(), I2C_SMBUS, uintptr(unsafe.Pointer(&i2c_smbus_ioctl_data{
 			readWrite: I2C_SMBUS_WRITE,
-			command:   reg,
+			command:   cmd,
 			size:      I2C_SMBUS_I2C_BLOCK_DATA,
-			data:      uintptr(unsafe.Pointer(&blockData[0]))}))); errno != 0 {
+			data:      uintptr(unsafe.Pointer(&data[0]))}))); errno != 0 {
 		err = syscall.Errno(errno)
 	}
 
