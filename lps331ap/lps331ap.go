@@ -8,17 +8,19 @@ import (
 
 type LPS331AP struct {
 	bus    *i2c.Bus
+	addr   byte
 	active bool
 }
 
 func (l *LPS331AP) Init(addr byte, bus byte) error {
 	var err error
-	l.bus, err = i2c.NewBus(addr, bus)
+	l.addr = addr
+	l.bus, err = i2c.NewBus(bus)
 	return err
 }
 
 func (l *LPS331AP) Read(reg byte) (byte, error) {
-	buf, err := l.bus.Read(reg, 1)
+	buf, err := l.bus.Read(l.addr, reg, 1)
 	if err != nil {
 		return 0, err
 	}
@@ -63,7 +65,7 @@ func (l *LPS331AP) Active() error {
 		return errors.New("Invalid device.")
 	}
 
-	if err != l.bus.Write(0x20, 0x90) {
+	if err != l.bus.Write(l.addr, 0x20, 0x90) {
 		return err
 	}
 
@@ -78,7 +80,7 @@ func (l *LPS331AP) Deactive() error {
 	}
 
 	var err error
-	if err != l.bus.Write(0x20, 0x0) {
+	if err != l.bus.Write(l.addr, 0x20, 0x0) {
 		return err
 	}
 
