@@ -40,11 +40,7 @@ type i2c_smbus_ioctl_data struct {
 type Bus struct {
 	// i2c-dev file pointer
 	file *os.File
-	// last transmitted address, track here
-	// so we don't have to redo the ioctl
-	// call if the address hasn't changed since the
-	// last access
-	addr byte
+
 	// simple bus access lock to ensure address
 	// set and data writes occur atomically
 	lock sync.Mutex
@@ -53,7 +49,7 @@ type Bus struct {
 // Returns an instance to an I2CBus. If we already have an I2CBus
 // created for the requested bus number, just return that, otherwise
 // set up a new one and open up its associated i2c-dev file
-func NewBus(addr, bus byte) (i2cbus *Bus, err error) {
+func NewBus(bus byte) (i2cbus *Bus, err error) {
 	busMapLock.Lock()
 	defer busMapLock.Unlock()
 
@@ -66,14 +62,8 @@ func NewBus(addr, bus byte) (i2cbus *Bus, err error) {
 		}
 
 		i2cbus.file = file
-		err = i2cbus.SetAddress(addr)
-
-		if err != nil {
-			return i2cbus, err
-		}
 
 		busMap[bus] = i2cbus
-
 		return i2cbus, nil
 	}
 
@@ -81,21 +71,21 @@ func NewBus(addr, bus byte) (i2cbus *Bus, err error) {
 }
 
 func (i2cbus *Bus) SetAddress(addr byte) (err error) {
-	if addr != i2cbus.addr {
-		if _, _, errno := syscall.Syscall(syscall.SYS_IOCTL, i2cbus.file.Fd(), I2C_SLAVE, uintptr(addr)); errno != 0 {
-			err = syscall.Errno(errno)
-			return
-		}
-
-		i2cbus.addr = addr
+	if _, _, errno := syscall.Syscall(syscall.SYS_IOCTL, i2cbus.file.Fd(), I2C_SLAVE, uintptr(addr)); errno != 0 {
+		err = syscall.Errno(errno)
+		return
 	}
 
 	return
 }
 
-func (i2cbus *Bus) Read(cmd byte, length byte) (list []byte, err error) {
+func (i2cbus *Bus) Read(addr byte, cmd byte, length byte) (list []byte, err error) {
 	i2cbus.lock.Lock()
 	defer i2cbus.lock.Unlock()
+
+	if err := i2cbus.SetAddress(addr); err != nil {
+		panic(err)
+	}
 
 	data := make([]byte, length+1)
 	data[0] = length
@@ -115,9 +105,13 @@ func (i2cbus *Bus) Read(cmd byte, length byte) (list []byte, err error) {
 	return
 }
 
-func (i2cbus *Bus) Write(cmd byte, list ...byte) (err error) {
+func (i2cbus *Bus) Write(addr byte, cmd byte, list ...byte) (err error) {
 	i2cbus.lock.Lock()
 	defer i2cbus.lock.Unlock()
+
+	if err := i2cbus.SetAddress(addr); err != nil {
+		panic(err)
+	}
 
 	data := make([]byte, len(list)+1)
 	data[0] = byte(len(list))
