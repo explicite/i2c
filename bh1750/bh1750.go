@@ -1,45 +1,56 @@
 package bh1750
 
 import (
-	"time"
-
 	"github.com/explicite/i2c"
+	"time"
 )
 
 const (
-	//ADDR ≦ 0.3VCC
+	// ADDR ≦ 0.3VCC
 	ADDR_L = 0x23
 
-	//ADDR ≧ 0.7VCC
+	// ADDR ≧ 0.7VCC
 	ADDR_H = 0x5c
 
-	//No active state.
+	// No active state.
 	POWER_DOWN = 0x00
 
-	//Waiting for measurement command.
+	// Waiting for measurement command.
 	POWER_ON = 0x01
 
-	//Reset Data register value. Reset command is not acceptable in Power Down mode.
+	// Reset Data register value. Reset command is not acceptable in Power Down mode.
 	RESET = 0x07
 
-	//Start measurement at 1lx resolution. Measurement Time is typically 120ms.
+	// Start measurement at 1lx resolution. Measurement Time is typically 120ms.
 	CON_H_RES_1LX = 0x10
 
-	//Start measurement at 0.5lx resolution. Measurement Time is typically 120ms.
+	// Start measurement at 0.5lx resolution. Measurement Time is typically 120ms.
 	CON_H_RES_05LX = 0x11
 
-	//Start measurement at 4lx resolution. Measurement Time is typically 16ms.
+	// Start measurement at 4lx resolution. Measurement Time is typically 16ms.
 	CON_L_RES_4LX = 0x13
 
-	//Start measurement at 1lx resolution. Measurement Time is typically 120ms. It is automatically set to Power Down mode after measurement.
+	// Start measurement at 1lx resolution. Measurement Time is typically 120ms.
+	// It is automatically set to Power Down mode after measurement.
 	OT_H_RES_1LX = 0x20
 
-	//Start measurement at 0.5lx resolution. Measurement Time is typically 120ms. It is automatically set to Power Down mode after measurement.
+	// Start measurement at 0.5lx resolution. Measurement Time is typically 120ms.
+	// It is automatically set to Power Down mode after measurement.
 	OT_H_RES_05LX = 0x21
 
-	//Start measurement at 4lx resolution. Measurement Time is typically 16ms. It is automatically set to Power Down mode after measurement.
+	// Start measurement at 4lx resolution. Measurement Time is typically 16ms.
+	// It is automatically set to Power Down mode after measurement.
 	OT_L_RES_4LX = 0x23
 )
+
+var timeout = map[byte]time.Duration{
+	CON_H_RES_1LX:  120 * time.Millisecond,
+	CON_H_RES_05LX: 120 * time.Millisecond,
+	CON_L_RES_4LX:  16 * time.Millisecond,
+	OT_H_RES_1LX:   120 * time.Millisecond,
+	OT_H_RES_05LX:  120 * time.Millisecond,
+	OT_L_RES_4LX:   16 * time.Millisecond,
+}
 
 type BH1750 struct {
 	bus    *i2c.Bus
@@ -58,7 +69,7 @@ func (b *BH1750) Init(addr byte, bus byte) error {
 
 func (b *BH1750) Lux(mode byte) (float32, error) {
 	b.bus.Write(b.addr, mode, 0x00)
-	time.Sleep(120 * time.Millisecond)
+	time.Sleep(timeout[mode])
 	buf := make([]byte, 0x02)
 	var err error
 	buf, err = b.bus.Read(b.addr, mode, 0x02)
