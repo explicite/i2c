@@ -2,7 +2,6 @@ package lps331ap
 
 import (
 	"errors"
-
 	"github.com/explicite/i2c"
 )
 
@@ -19,7 +18,7 @@ func (l *LPS331AP) Init(addr byte, bus byte) error {
 	return err
 }
 
-func (l *LPS331AP) Read(reg byte) (byte, error) {
+func (l *LPS331AP) read(reg byte) (byte, error) {
 	buf, err := l.bus.Read(l.addr, reg, 1)
 	if err != nil {
 		return 0, err

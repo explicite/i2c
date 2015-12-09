@@ -1,7 +1,7 @@
 package bh1750
 
 import (
-	"github.com/explicite/i2c"
+	"github.com/explicite/i2c/driver"
 	"time"
 )
 
@@ -41,38 +41,43 @@ const (
 	// Start measurement at 4lx resolution. Measurement Time is typically 16ms.
 	// It is automatically set to Power Down mode after measurement.
 	OT_L_RES_4LX = 0x23
+
+	// 20ms for safety time margine in measurement.
+	STM = 20 * time.Millisecond
 )
 
+// Map of timeouts for measurement type.
 var timeout = map[byte]time.Duration{
-	CON_H_RES_1LX:  120 * time.Millisecond,
-	CON_H_RES_05LX: 120 * time.Millisecond,
-	CON_L_RES_4LX:  16 * time.Millisecond,
-	OT_H_RES_1LX:   120 * time.Millisecond,
-	OT_H_RES_05LX:  120 * time.Millisecond,
-	OT_L_RES_4LX:   16 * time.Millisecond,
+	CON_H_RES_1LX:  120*time.Millisecond + STM,
+	CON_H_RES_05LX: 120*time.Millisecond + STM,
+	CON_L_RES_4LX:  16*time.Millisecond + STM,
+	OT_H_RES_1LX:   120*time.Millisecond + STM,
+	OT_H_RES_05LX:  120*time.Millisecond + STM,
+	OT_L_RES_4LX:   16*time.Millisecond + STM,
 }
 
 type BH1750 struct {
-	bus    *i2c.Bus
-	addr   byte
-	active bool
+	drv driver.Driver
 }
 
 func (b *BH1750) Init(addr byte, bus byte) error {
 	var err error
-	b.bus, err = i2c.NewBus(bus)
-	b.addr = addr
-	b.bus.Write(addr, POWER_DOWN, 0x00)
+	var drv *driver.Driver
+	drv, err = driver.NewDriver(addr, bus)
+	if err == nil {
+		drv.Write(POWER_DOWN, 0x00)
+		b.drv = *drv
+	}
 
 	return err
 }
 
 func (b *BH1750) Lux(mode byte) (float32, error) {
-	b.bus.Write(b.addr, mode, 0x00)
+	b.drv.Write(mode, 0x00)
 	time.Sleep(timeout[mode])
 	buf := make([]byte, 0x02)
 	var err error
-	buf, err = b.bus.Read(b.addr, mode, 0x02)
+	buf, err = b.drv.Read(mode, 0x02)
 
 	if err != nil {
 		return 0, err
@@ -83,26 +88,26 @@ func (b *BH1750) Lux(mode byte) (float32, error) {
 
 func (b *BH1750) Active() error {
 	var err error
-	if err != b.bus.Write(b.addr, POWER_ON, 0x00) {
+	if err = b.drv.On(); err != nil {
 		return err
 	}
 
-	b.active = true
+	if err = b.drv.Write(POWER_ON, 0x00); err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (b *BH1750) Deactive() error {
-	if !b.active {
-		return nil
-	}
-
 	var err error
-	if err != b.bus.Write(b.addr, POWER_DOWN, 0x00) {
+	if err = b.drv.Off(); err != nil {
 		return err
 	}
 
-	b.active = false
+	if err != b.drv.Write(POWER_DOWN, 0x00) {
+		return err
+	}
 
 	return nil
 }
