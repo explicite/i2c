@@ -56,28 +56,23 @@ var timeout = map[byte]time.Duration{
 	OT_L_RES_4LX:   16*time.Millisecond + STM,
 }
 
-type BH1750 struct {
-	drv driver.Driver
-}
+type BH1750 struct{ driver.Driver }
 
 func (b *BH1750) Init(addr byte, bus byte) error {
-	var err error
-	var drv *driver.Driver
-	drv, err = driver.NewDriver(addr, bus)
+	err := b.Init(addr, bus)
 	if err == nil {
-		drv.Write(POWER_DOWN, 0x00)
-		b.drv = *drv
+		b.Write(POWER_DOWN, 0x00)
 	}
 
 	return err
 }
 
 func (b *BH1750) Lux(mode byte) (float32, error) {
-	b.drv.Write(mode, 0x00)
+	b.Write(mode, 0x00)
 	time.Sleep(timeout[mode])
 	buf := make([]byte, 0x02)
 	var err error
-	buf, err = b.drv.Read(mode, 0x02)
+	buf, err = b.Read(mode, 0x02)
 
 	if err != nil {
 		return 0, err
@@ -88,11 +83,11 @@ func (b *BH1750) Lux(mode byte) (float32, error) {
 
 func (b *BH1750) Active() error {
 	var err error
-	if err = b.drv.On(); err != nil {
+	if err = b.On(); err != nil {
 		return err
 	}
 
-	if err = b.drv.Write(POWER_ON, 0x00); err != nil {
+	if err = b.Write(POWER_ON, 0x00); err != nil {
 		return err
 	}
 
@@ -101,11 +96,11 @@ func (b *BH1750) Active() error {
 
 func (b *BH1750) Deactive() error {
 	var err error
-	if err = b.drv.Off(); err != nil {
+	if err = b.Off(); err != nil {
 		return err
 	}
 
-	if err != b.drv.Write(POWER_DOWN, 0x00) {
+	if err != b.Write(POWER_DOWN, 0x00) {
 		return err
 	}
 

@@ -11,13 +11,13 @@ type Driver struct {
 	active bool
 }
 
-func NewDriver(addr byte, busNo byte) (*Driver, error) {
+func (d *Driver) Init(addr byte, busNo byte) error {
 	bus, err := i2c.NewBus(busNo)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	d := Driver{bus, addr, false}
-	return &d, nil
+	d = &Driver{bus, addr, false}
+	return nil
 }
 
 func (d *Driver) Read(cmd byte, length byte) (list []byte, err error) {

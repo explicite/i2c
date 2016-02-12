@@ -32,7 +32,7 @@ func (l *LPS331AP) Pressure() (float32, error) {
 
 	for idx := 0x28; idx <= 0x2a; idx++ {
 		var err error
-		buf[idx-0x28], err = l.Read(byte(idx))
+		buf[idx-0x28], err = l.read(byte(idx))
 		if err != nil {
 			return 0, err
 		}
@@ -46,7 +46,7 @@ func (l *LPS331AP) Temperature() (float32, error) {
 
 	for idx := 0x2b; idx <= 0x2c; idx++ {
 		var err error
-		buf[idx-0x2b], err = l.Read(byte(idx))
+		buf[idx-0x2b], err = l.read(byte(idx))
 		if err != nil {
 			return 0, err
 		}
@@ -56,7 +56,7 @@ func (l *LPS331AP) Temperature() (float32, error) {
 }
 
 func (l *LPS331AP) Active() error {
-	id, err := l.Read(0x0f)
+	id, err := l.read(0x0f)
 	if err != nil {
 		return err
 	}

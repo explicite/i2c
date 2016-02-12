@@ -48,6 +48,4 @@ const (
 	READ_FR_2 = 0xB8
 )
 
-type SI7021 struct {
-	drv driver.Driver
-}
+type SI7021 struct{ driver.Driver }
