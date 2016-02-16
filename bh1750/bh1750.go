@@ -59,7 +59,7 @@ var timeout = map[byte]time.Duration{
 type BH1750 struct{ driver.Driver }
 
 func (b *BH1750) Init(addr byte, bus byte) error {
-	err := b.Init(addr, bus)
+	err := b.InitDriver(addr, bus)
 	if err == nil {
 		b.Write(POWER_DOWN, 0x00)
 	}

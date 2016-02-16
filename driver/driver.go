@@ -11,7 +11,7 @@ type Driver struct {
 	active bool
 }
 
-func (d *Driver) Init(addr byte, busNo byte) error {
+func (d *Driver) InitDriver(addr byte, busNo byte) error {
 	bus, err := i2c.NewBus(busNo)
 	if err != nil {
 		return err

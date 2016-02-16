@@ -11,7 +11,7 @@ type LPS331AP struct {
 }
 
 func (l *LPS331AP) Init(addr byte, bus byte) error {
-	return l.Init(addr, bus)
+	return l.InitDriver(addr, bus)
 }
 
 func (l *LPS331AP) read(reg byte) (byte, error) {
