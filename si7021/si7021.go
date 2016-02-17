@@ -6,16 +6,16 @@ import (
 
 const (
 	// Measure Relative Humidity, Hold Master Mode.
-	ReadMrhHm = 0xE5
+	RhHm = 0xE5
 
 	// Measure Relative Humidity, No Hold Master Mode.
-	ReadMrh = 0xF5
+	Rh = 0xF5
 
 	// Measure Temperature, Hold Master Mode.
-	ReadTmpHm = 0xE3
+	TmpHm = 0xE3
 
 	// Measure Temperature, No Hold Master Mode.
-	ReadTmp = 0xF3
+	Tmp = 0xF3
 
 	// Read Temperature Value from Previous RH Measurement.
 	ReadTmpPrev = 0xE0
@@ -49,3 +49,45 @@ const (
 )
 
 type SI7021 struct{ driver.Driver }
+
+func (s *SI7021) Init(addr byte, bus byte) error {
+	return s.Load(addr, bus)
+}
+
+func (s *SI7021) RelativeHumidity(hm bool) (float64, error) {
+	//TODO
+	if hm == true {
+		s.Write(RhHm, 0x01)
+	} else {
+		s.Write(Rh, 0x01)
+	}
+	return float64(1), nil
+}
+
+func (s *SI7021) Temperature(hm bool) (float64, error) {
+	//TODO
+	if hm == true {
+		s.Write(TmpHm, 0x01)
+	} else {
+		s.Write(Tmp, 0x01)
+	}
+	return float64(1), nil
+}
+
+func (s *SI7021) ESN() (string, error) {
+	//TODO
+	return "todo", nil
+}
+
+func (s *SI7021) Rev() (string, error) {
+	//TODO
+	return "todo", nil
+}
+
+func (s *SI7021) Active() error {
+	return s.On()
+}
+
+func (s *SI7021) Deactive() error {
+	return s.Off()
+}
