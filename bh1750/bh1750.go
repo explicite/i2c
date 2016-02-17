@@ -60,11 +60,11 @@ type BH1750 struct{ driver.Driver }
 
 func (b *BH1750) Init(addr byte, bus byte) error {
 	err := b.Load(addr, bus)
-	if err == nil {
-		return b.Write(PowerDown, 0x00)
+	if err != nil {
+		return err
 	}
 
-	return err
+	return b.Write(PowerDown, 0x00)
 }
 
 func (b *BH1750) Lux(mode byte) (float32, error) {
@@ -82,27 +82,22 @@ func (b *BH1750) Lux(mode byte) (float32, error) {
 }
 
 func (b *BH1750) Active() error {
-	var err error
-	if err = b.On(); err != nil {
+	err := b.On()
+
+	if err != nil {
 		return err
 	}
 
-	if err = b.Write(PowerOn, 0x00); err != nil {
-		return err
-	}
-
-	return nil
+	return b.Write(PowerOn, 0x00)
 }
 
 func (b *BH1750) Deactive() error {
-	var err error
-	if err = b.Off(); err != nil {
+	err := b.Off()
+
+	if err != nil {
 		return err
 	}
 
-	if err != b.Write(PowerDown, 0x00) {
-		return err
-	}
+	return b.Write(PowerDown, 0x00)
 
-	return nil
 }

@@ -16,7 +16,7 @@ func (d *Driver) Load(addr byte, busNo byte) error {
 	if err != nil {
 		return err
 	}
-	d = &Driver{bus, addr, false}
+	*d = Driver{bus, addr, false}
 	return nil
 }
 
