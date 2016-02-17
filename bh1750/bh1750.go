@@ -7,61 +7,61 @@ import (
 
 const (
 	// ADDR ≦ 0.3VCC
-	ADDR_L = 0x23
+	AddrL = 0x23
 
 	// ADDR ≧ 0.7VCC
-	ADDR_H = 0x5c
+	AddrH = 0x5c
 
 	// No active state.
-	POWER_DOWN = 0x00
+	PowerDown = 0x00
 
 	// Waiting for measurement command.
-	POWER_ON = 0x01
+	PowerOn = 0x01
 
 	// Reset Data register value. Reset command is not acceptable in Power Down mode.
-	RESET = 0x07
+	Reset = 0x07
 
 	// Start measurement at 1lx resolution. Measurement Time is typically 120ms.
-	CON_H_RES_1LX = 0x10
+	ConHRes1lx = 0x10
 
 	// Start measurement at 0.5lx resolution. Measurement Time is typically 120ms.
-	CON_H_RES_05LX = 0x11
+	ConHRes05lx = 0x11
 
 	// Start measurement at 4lx resolution. Measurement Time is typically 16ms.
-	CON_L_RES_4LX = 0x13
+	ConLRes4lx = 0x13
 
 	// Start measurement at 1lx resolution. Measurement Time is typically 120ms.
 	// It is automatically set to Power Down mode after measurement.
-	OT_H_RES_1LX = 0x20
+	OtHRes1lx = 0x20
 
 	// Start measurement at 0.5lx resolution. Measurement Time is typically 120ms.
 	// It is automatically set to Power Down mode after measurement.
-	OT_H_RES_05LX = 0x21
+	OtHRes05lx = 0x21
 
 	// Start measurement at 4lx resolution. Measurement Time is typically 16ms.
 	// It is automatically set to Power Down mode after measurement.
-	OT_L_RES_4LX = 0x23
+	OtLRes4lx = 0x23
 
 	// 20ms for safety time margine in measurement.
-	STM = 20 * time.Millisecond
+	Stm = 20 * time.Millisecond
 )
 
 // Map of timeouts for measurement type.
 var timeout = map[byte]time.Duration{
-	CON_H_RES_1LX:  120*time.Millisecond + STM,
-	CON_H_RES_05LX: 120*time.Millisecond + STM,
-	CON_L_RES_4LX:  16*time.Millisecond + STM,
-	OT_H_RES_1LX:   120*time.Millisecond + STM,
-	OT_H_RES_05LX:  120*time.Millisecond + STM,
-	OT_L_RES_4LX:   16*time.Millisecond + STM,
+	ConHRes1lx:  120*time.Millisecond + Stm,
+	ConHRes05lx: 120*time.Millisecond + Stm,
+	ConLRes4lx:  16*time.Millisecond + Stm,
+	OtHRes1lx:   120*time.Millisecond + Stm,
+	OtHRes05lx:  120*time.Millisecond + Stm,
+	OtLRes4lx:   16*time.Millisecond + Stm,
 }
 
 type BH1750 struct{ driver.Driver }
 
 func (b *BH1750) Init(addr byte, bus byte) error {
-	err := b.InitDriver(addr, bus)
+	err := b.Load(addr, bus)
 	if err == nil {
-		b.Write(POWER_DOWN, 0x00)
+		return b.Write(PowerDown, 0x00)
 	}
 
 	return err
@@ -87,7 +87,7 @@ func (b *BH1750) Active() error {
 		return err
 	}
 
-	if err = b.Write(POWER_ON, 0x00); err != nil {
+	if err = b.Write(PowerOn, 0x00); err != nil {
 		return err
 	}
 
@@ -100,7 +100,7 @@ func (b *BH1750) Deactive() error {
 		return err
 	}
 
-	if err != b.Write(POWER_DOWN, 0x00) {
+	if err != b.Write(PowerDown, 0x00) {
 		return err
 	}
 
