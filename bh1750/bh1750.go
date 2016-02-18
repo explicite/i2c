@@ -59,12 +59,7 @@ var timeout = map[byte]time.Duration{
 type BH1750 struct{ driver.Driver }
 
 func (b *BH1750) Init(addr byte, bus byte) error {
-	err := b.Load(addr, bus)
-	if err != nil {
-		return err
-	}
-
-	return b.Write(PowerDown, 0x00)
+	return b.Load(addr, bus)
 }
 
 func (b *BH1750) Lux(mode byte) (float32, error) {
@@ -82,22 +77,9 @@ func (b *BH1750) Lux(mode byte) (float32, error) {
 }
 
 func (b *BH1750) Active() error {
-	err := b.On()
-
-	if err != nil {
-		return err
-	}
-
-	return b.Write(PowerOn, 0x00)
+	return b.On()
 }
 
 func (b *BH1750) Deactive() error {
-	err := b.Off()
-
-	if err != nil {
-		return err
-	}
-
-	return b.Write(PowerDown, 0x00)
-
+	return b.Off()
 }
