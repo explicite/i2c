@@ -5,46 +5,49 @@ import (
 )
 
 const (
-	// Measure Relative Humidity, Hold Master Mode.
+	// RhHm code Measure Relative Humidity, Hold Master Mode.
 	RhHm = 0xE5
 
-	// Measure Relative Humidity, No Hold Master Mode.
+	// Rh code Measure Relative Humidity, No Hold Master Mode.
 	Rh = 0xF5
 
-	// Measure Temperature, Hold Master Mode.
+	// TmpHm code Measure Temperature, Hold Master Mode.
 	TmpHm = 0xE3
 
-	// Measure Temperature, No Hold Master Mode.
+	// Tmp code Measure Temperature, No Hold Master Mode.
 	Tmp = 0xF3
 
-	// Read Temperature Value from Previous RH Measurement.
+	// ReadTmpPrev code Read Temperature Value from Previous RH Measurement.
 	ReadTmpPrev = 0xE0
 
-	// Reset.
+	// Reset code.
 	Reset = 0xFE
 
-	// Write RH/T User Register 1
+	// WriteRhtUr1 code Write RH/T User Register 1
 	WriteRhtUr1 = 0xE6
 
-	// Read RH/T User Register 1
+	// ReadRhtUr1 code Read RH/T User Register 1
 	ReadRhtUr1 = 0xE7
 
-	// Write Heater Control Register
+	// WriteHcr code Write Heater Control Register
 	WriteHcr = 0x51
 
-	// Read Heater Control Register
+	// ReadHcr code Read Heater Control Register
 	ReadHcr = 0x11
 
-	// Read Electronic ID 1st Byte
+	// ReadEid1p1 code Read Electronic ID 1st Byte part 1
 	ReadEid1p1 = 0xFA
+	// ReadEid1p2 code Read Electronic ID 1st Byte part 2
 	ReadEid1p2 = 0x0F
 
-	// Read Electronic ID 2nd Byte
+	// ReadEid2p1 code Read Electronic ID 2nd Byte part 1
 	ReadEid2p1 = 0xFC
+	// ReadEid2p2 code Read Electronic ID 2nd Byte part 2
 	ReadEid2p2 = 0xC9
 
-	// Read Firmware Revision
+	// ReadFr1 code Read Firmware Revision part 1
 	ReadFr1 = 0x84
+	// ReadFr2 code Read Firmware Revision part 2
 	ReadFr2 = 0xB8
 )
 
