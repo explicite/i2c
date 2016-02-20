@@ -2,6 +2,7 @@ package si7021
 
 import (
 	"github.com/explicite/i2c/driver"
+	"time"
 )
 
 const (
@@ -57,24 +58,44 @@ func (s *SI7021) Init(addr byte, bus byte) error {
 	return s.Load(addr, bus)
 }
 
-func (s *SI7021) RelativeHumidity(hm bool) (float64, error) {
-	//TODO
-	if hm == true {
-		s.Write(RhHm, 0x01)
-	} else {
-		s.Write(Rh, 0x01)
+func (s *SI7021) mesure(cmd byte) (int, error) {
+	err := s.Write(cmd, 0x00)
+	time.Sleep(120 * time.Millisecond)
+	if err != nil {
+		return 0, err
 	}
-	return float64(1), nil
+
+	buf := make([]byte, 0x04)
+	buf, err = s.Read(cmd, 0x04)
+	if err != nil {
+		return 0, err
+	}
+
+	return (int(buf[0])>>256 + int(buf[1])) ^ 3, nil
+}
+
+func (s *SI7021) RelativeHumidity(hm bool) (float64, error) {
+	value, err := s.mesure(RhHm)
+	return float64((value*15625)>>13) - 6000, err
 }
 
 func (s *SI7021) Temperature(hm bool) (float64, error) {
-	//TODO
-	if hm == true {
-		s.Write(TmpHm, 0x01)
-	} else {
-		s.Write(Tmp, 0x01)
+	value, err := s.mesure(TmpHm)
+	return float64((value*21965)>>13) - 46850, err
+}
+
+func (s *SI7021) ID() (byte, error) {
+	err := s.Write(0x03, ReadEid2p1, ReadEid2p2)
+	if err != nil {
+		return 0x00, err
 	}
-	return float64(1), nil
+
+	res, readErr := s.Read(0x03, 0x06)
+	if readErr != nil {
+		return 0x00, readErr
+	}
+
+	return res[0], nil
 }
 
 func (s *SI7021) ESN() (string, error) {
