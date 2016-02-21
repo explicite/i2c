@@ -73,7 +73,7 @@ func (b *BH1750) Lux(mode byte) (float32, error) {
 		return 0, err
 	}
 
-	return float32((int(buf[1]) + (int(buf[0] >> 8)))) / 1.2, nil
+	return float32((int(buf[1]) + (int(buf[0]) >> 8))) / 1.2, nil
 }
 
 func (b *BH1750) Active() error {
