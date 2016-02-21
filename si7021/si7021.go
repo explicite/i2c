@@ -71,17 +71,17 @@ func (s *SI7021) mesure(cmd byte) (int, error) {
 		return 0, err
 	}
 
-	return (int(buf[0])>>256 + int(buf[1])) ^ 3, nil
+	return (int(buf[0])*256 + int(buf[1])) ^ 3, nil
 }
 
 func (s *SI7021) RelativeHumidity(hm bool) (float64, error) {
 	value, err := s.mesure(RhHm)
-	return float64((value*15625)>>13) - 6000, err
+	return float64(((value*15625)>>13)-6000) / 1000, err
 }
 
 func (s *SI7021) Temperature(hm bool) (float64, error) {
 	value, err := s.mesure(TmpHm)
-	return float64((value*21965)>>13) - 46850, err
+	return float64(((value*21965)>>13)-46850) / 1000, err
 }
 
 func (s *SI7021) ID() (byte, error) {
