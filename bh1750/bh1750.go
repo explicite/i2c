@@ -62,7 +62,7 @@ func (b *BH1750) Init(addr byte, bus byte) error {
 	return b.Load(addr, bus)
 }
 
-func (b *BH1750) Lux(mode byte) (float32, error) {
+func (b *BH1750) Illuminance(mode byte) (float32, error) {
 	b.Write(mode, 0x00)
 	time.Sleep(timeout[mode])
 	buf := make([]byte, 0x02)
