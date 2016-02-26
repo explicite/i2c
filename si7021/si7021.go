@@ -2,7 +2,6 @@ package si7021
 
 import (
 	"github.com/explicite/i2c/driver"
-	"time"
 )
 
 const (
@@ -59,14 +58,7 @@ func (s *SI7021) Init(addr byte, bus byte) error {
 }
 
 func (s *SI7021) mesure(cmd byte) (int, error) {
-	err := s.Write(cmd, 0x00)
-	time.Sleep(120 * time.Millisecond)
-	if err != nil {
-		return 0, err
-	}
-
-	buf := make([]byte, 0x04)
-	buf, err = s.Read(cmd, 0x04)
+	buf, err := s.Read(cmd, 0x04)
 	if err != nil {
 		return 0, err
 	}
